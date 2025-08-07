@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libnotify-dev
+
       - name: Create output directory
         run: mkdir -p x64/Release
 
@@ -33,6 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3
+
       - name: Create output directory
         run: mkdir x64\Release
 
@@ -41,6 +49,7 @@ jobs:
           cl /LD /EHsc /D OS_WINDOWS ^
             Photino.Native\Exports.cpp Photino.Native\Photino.Windows.cpp ^
             /Fe:x64\Release\Photino.Native.dll
+        shell: cmd
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -52,6 +61,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check WebKit framework
+        run: ls /System/Library/Frameworks | grep WebKit || echo "WebKit not found"
 
       - name: Create output directory
         run: mkdir -p x64/Release
