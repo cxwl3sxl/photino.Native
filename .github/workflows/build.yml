@@ -36,18 +36,18 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install WIL via vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install wil
+          .\vcpkg\vcpkg.exe install wil:x64-windows
 
-      - name: Download WebView2 SDK headers
+      - name: Install WebView2 SDK via NuGet
         run: |
-          mkdir webview2
-          curl -L https://github.com/MicrosoftEdge/WebView2Samples/raw/main/WebView2Samples/Win32WebView2Sample/WebView2.h -o webview2/WebView2.h
+          nuget install Microsoft.Web.WebView2 -Version 1.0.3351.48 -OutputDirectory webview2sdk
 
       - name: Create output directory
         run: mkdir x64\Release
@@ -58,15 +58,9 @@ jobs:
           cl /LD /EHsc /std:c++17 /D OS_WINDOWS ^
             Photino.Native\Exports.cpp Photino.Native\Photino.Windows.cpp ^
             /I vcpkg\packages\wil_x64-windows\include ^
-            /I webview2 ^
+            /I webview2sdk\Microsoft.Web.WebView2.1.0.3351.48\build\native\include ^
             /Fe:x64\Release\Photino.Native.dll
         shell: cmd
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Photino.Native.dll
-          path: x64\Release\Photino.Native.dll
 
   build-macos:
     runs-on: macos-latest
