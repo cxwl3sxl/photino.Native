@@ -38,6 +38,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install WIL via vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install wil
+
       - name: Create output directory
         run: mkdir x64\Release
 
@@ -60,16 +66,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check WebKit framework
-        run: ls /System/Library/Frameworks | grep WebKit || echo "WebKit not found"
-
       - name: Create output directory
         run: mkdir -p x64/Release
 
       - name: Build Photino.Native.dylib
         run: |
           clang++ -std=c++11 -dynamiclib -DOS_MACOS \
-            Photino.Native/Exports.cpp Photino.Native/Photino.Mac.cpp \
+            Photino.Native/Exports.cpp \
+            Photino.Native/Photino.Mac.mm \
+            Photino.Native/Photino.Mac.AppDelegate.mm \
+            Photino.Native/Photino.Mac.UiDelegate.mm \
+            Photino.Native/Photino.Mac.UrlSchemeHandler.mm \
             -o x64/Release/Photino.Native.dylib \
             -framework Cocoa -framework WebKit
 
