@@ -211,6 +211,11 @@ extern "C"
 		instance->SetFullScreen(fullScreen);
 	}
 
+	EXPORTED void Photino_OpenDevTools(Photino* instance)
+	{
+		instance->OpenDevTools();
+	}
+
 	EXPORTED void Photino_SetIconFile(Photino* instance, AutoString filename)
 	{
 		instance->SetIconFile(filename);
