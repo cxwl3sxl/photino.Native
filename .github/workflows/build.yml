@@ -38,11 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install WIL via vcpkg
+      - name: Install WIL and WebView2 via vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install wil
+          .\vcpkg\vcpkg install wil microsoft.webview2
 
       - name: Create output directory
         run: mkdir x64\Release
@@ -50,9 +50,10 @@ jobs:
       - name: Build Photino.Native.dll
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-          cl /LD /EHsc /D OS_WINDOWS ^
+          cl /LD /EHsc /std:c++17 /D OS_WINDOWS ^
             Photino.Native\Exports.cpp Photino.Native\Photino.Windows.cpp ^
             /I vcpkg\packages\wil_x64-windows\include ^
+            /I vcpkg\packages\microsoft.webview2_x64-windows\include ^
             /Fe:x64\Release\Photino.Native.dll
         shell: cmd
 
