@@ -290,6 +290,7 @@ public:
 	void SetTitle(AutoString title);
 	void SetTopmost(bool topmost);
 	void SetZoom(int zoom);
+	void OpenDevTools();
 
 	void ShowNotification(AutoString title, AutoString message);
 	void WaitForExit();

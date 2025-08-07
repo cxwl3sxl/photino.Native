@@ -939,4 +939,344 @@ void Photino::Show(bool isAlreadyShown)
     [_window makeKeyAndOrderFront: _window];
     [_window orderFrontRegardless];
 }
+void Photino::OpenDevTools() {
+    if (_webviewConfiguration) {
+        [_webviewConfiguration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
+    }
+}
+{
+    //! Not supported on macOS
+}
+
+void Photino::SetIconFile(AutoString filename)
+{
+	NSString* path = [NSString stringWithUTF8String: filename];
+    NSImage* icon = [[NSImage alloc] initWithContentsOfFile: path];
+    if (icon != nil)
+        [[_window standardWindowButton: NSWindowDocumentIconButton] setImage:icon];
+}
+
+void Photino::SetFullScreen(bool fullScreen)
+{
+    if (fullScreen)
+        [_window.contentView enterFullScreenMode: [NSScreen mainScreen] withOptions: nil];
+    else
+        [_window.contentView exitFullScreenModeWithOptions: nil];
+}
+
+void Photino::SetMinimized(bool minimized)
+{
+    if (_window.isMiniaturized == minimized) return;
+
+    if (minimized)
+        [_window miniaturize: NULL];
+    else
+	    [_window deminiaturize: NULL];
+}
+
+void Photino::SetMaximized(bool maximized)
+{
+    // Maximize window by filling the screen with the window instead of setting it to fullscreen
+    if (maximized)
+    {
+        NSRect window = [_window frame];
+        _preMaximizedWidth = window.size.width;
+        _preMaximizedHeight = window.size.height;
+        _preMaximizedXPosition = window.origin.x;
+        _preMaximizedYPosition = window.origin.y;
+        
+        NSRect screen = [[_window screen] visibleFrame];
+        CGFloat xPos = screen.origin.x;
+        CGFloat yPos = screen.origin.y;
+        CGFloat width = screen.size.width;
+        CGFloat height = screen.size.height;
+        [_window setFrame: NSMakeRect(xPos, yPos, width, height) display:YES];
+    }
+    else if (!maximized && _preMaximizedWidth > 0 && _preMaximizedHeight > 0)
+    {
+        // Restore window to its previous size
+        [_window setFrame: NSMakeRect(_preMaximizedXPosition, _preMaximizedYPosition, _preMaximizedWidth, _preMaximizedHeight) display:YES];
+    }
+}
+
+void Photino::SetPosition(int x, int y)
+{
+    // Currently assuming window is on monitor 0
+    
+    // Todo: Determine the monitor the window is on.
+    // To determine the current monitor, check the window's position
+    // and compare it to the width/height of the monitors. If the position
+    // is larger than the dimensions of the first monitor, then use the
+    // second / third montior.
+    std::vector<Monitor*> monitors = GetMonitors();
+    Monitor monitor = *monitors[0];
+    
+    NSRect frame = [_window frame];
+    int height = (int)roundf(frame.size.height);
+    
+    CGFloat left = (CGFloat)x;
+    CGFloat top = (CGFloat)(monitor.monitor.height - (y + height));
+
+    CGPoint position = CGPointMake(left, top);
+    [_window setFrameOrigin: position];
+}
+
+void Photino::SetResizable(bool resizable)
+{
+    if (resizable)
+        _window.styleMask |= NSWindowStyleMaskResizable;
+    else
+        _window.styleMask &= ~NSWindowStyleMaskResizable;
+}
+
+void Photino::SetSize(int width, int height)
+{
+    // The macOS window server has a limit of 10,000 pixels for either dimension
+    // See: https://developer.apple.com/documentation/appkit/nswindow/1419595-maxsize
+    width = width > 10000 ? 10000 : width;
+    height = height > 10000 ? 10000 : height;
+
+    // Ensure that the size does not exceed any set min/max dimension:
+    // This is done here because the window server will not enforce this
+    // when the size is set programmatically compared to when the user
+    // resizes the window manually.
+    // This behavior is different from Windows and Linux where the OS
+    // will enforce the min/max size regardless of how the size is set.
+    if (width > _window.maxSize.width) width = _window.maxSize.width;
+    if (height > _window.maxSize.height) height = _window.maxSize.height;
+    if (width < _window.minSize.width) width = _window.minSize.width;
+    if (height < _window.minSize.height) height = _window.minSize.height;
+
+    NSRect frame = [_window frame];
+    
+    CGFloat fw = (CGFloat)width;
+    CGFloat fh = (CGFloat)height;
+    
+    CGFloat oldHeight = frame.size.height;
+
+    frame.size = CGSizeMake(fw, fh);
+    
+    // Reposition the window so that the bottom left corner stays in the same place
+    frame.origin.y -= fh - oldHeight;
+    
+    [_window setFrame: frame display: true];
+}
+
+void Photino::SetMinSize(int width, int height)
+{
+    // The macOS window server has a limit of 10,000 pixels for either dimension
+    // See: https://developer.apple.com/documentation/appkit/nswindow/1419595-maxsize
+    width = width > 10000 ? 10000 : width;
+    height = height > 10000 ? 10000 : height;
+
+    NSSize minSize = NSMakeSize(width, height);
+    [_window setMinSize: minSize];
+}
+
+void Photino::SetMaxSize(int width, int height)
+{
+    // The macOS window server has a limit of 10,000 pixels for either dimension
+    // See: https://developer.apple.com/documentation/appkit/nswindow/1419595-maxsize
+    width = width > 10000 ? 10000 : width;
+    height = height > 10000 ? 10000 : height;
+
+    NSSize maxSize = NSMakeSize(width, height);
+    [_window setMaxSize: maxSize];
+}
+
+void Photino::SetTitle(AutoString title)
+{
+    strcpy(_windowTitle, title);
+    [_window setTitle: [NSString stringWithUTF8String:title]];
+}
+
+void Photino::SetTopmost(bool topmost)
+{
+    if (topmost) [_window setLevel: NSFloatingWindowLevel];
+    else [_window setLevel: NSNormalWindowLevel];
+}
+
+void Photino::SetZoom(int zoom)
+{
+    CGFloat newZoom = zoom / 100.0;
+	[_webview setMagnification: newZoom];
+}
+
+void EnsureInvoke(dispatch_block_t block)
+{
+    if ([NSThread isMainThread])
+        block();
+    else
+        dispatch_async(dispatch_get_main_queue(), block);
+}
+
+void Photino::ShowNotification(AutoString title, AutoString body)
+{
+    UNMutableNotificationContent *objNotificationContent = [[UNMutableNotificationContent alloc] init];
+    objNotificationContent.title = [[NSString stringWithUTF8String:title] autorelease];
+    objNotificationContent.body = [[NSString stringWithUTF8String:body] autorelease];
+    objNotificationContent.sound = [UNNotificationSound defaultSound];
+    UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.3 repeats:NO];
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"three" content:objNotificationContent trigger:trigger];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {}];
+}
+
+void Photino::WaitForExit()
+{
+    [NSApp run];
+}
+
+//Callbacks
+void Photino::GetAllMonitors(GetAllMonitorsCallback callback)
+{
+    if (callback)
+    {
+        for (NSScreen* screen in [NSScreen screens])
+        {
+            Monitor props = {};
+
+            NSRect frame = [screen frame];
+            props.monitor.x = (int)roundf(frame.origin.x);
+            props.monitor.y = (int)roundf(frame.origin.y);
+            props.monitor.width = (int)roundf(frame.size.width);
+            props.monitor.height = (int)roundf(frame.size.height);
+
+            NSRect vframe = [screen visibleFrame];
+            props.work.x = (int)roundf(vframe.origin.x);
+            props.work.y = (int)roundf(vframe.origin.y);
+            props.work.width = (int)roundf(vframe.size.width);
+            props.work.height = (int)roundf(vframe.size.height);
+
+            // CGFloat scaleFactor = [screen backingScaleFactor];
+            props.scale = [screen backingScaleFactor];
+
+            callback(&props);
+        }
+    }
+}
+
+std::vector<Monitor *> Photino::GetMonitors()
+{
+    std::vector<Monitor *> monitors;
+
+    for (NSScreen *screen : [NSScreen screens])
+    {
+        NSRect monitorFrame = [screen frame];
+        Monitor::MonitorRect monitorArea;
+        monitorArea.x = (int)roundf(monitorFrame.origin.x);
+        monitorArea.y = (int)roundf(monitorFrame.origin.y);
+        monitorArea.width = (int)roundf(monitorFrame.size.width);
+        monitorArea.height = (int)roundf(monitorFrame.size.height);
+
+        NSRect workFrame = [screen visibleFrame];
+        Monitor::MonitorRect workArea;
+        workArea.x = (int)roundf(workFrame.origin.x);
+        workArea.y = (int)roundf(workFrame.origin.y);
+        workArea.width = (int)roundf(workFrame.size.width);
+        workArea.height = (int)roundf(workFrame.size.height);
+
+        CGFloat scaleFactor = [screen backingScaleFactor];
+
+        Monitor *monitor = new Monitor();
+        monitor->monitor = monitorArea;
+        monitor->work = workArea;
+        monitor->scale = scaleFactor;
+
+        monitors.push_back(monitor);
+    }
+
+    return monitors;
+}
+
+void Photino::Invoke(ACTION callback)
+{
+    dispatch_sync(dispatch_get_main_queue(), ^(void){
+        callback();
+    });
+}
+
+//private methods
+void Photino::AddCustomScheme(AutoString scheme, WebResourceRequestedCallback requestHandler)
+{
+    // Note that this can only be done *before* the WKWebView is instantiated, so we only let this
+    // get called from the options callback in the constructor
+    UrlSchemeHandler* schemeHandler = [[[UrlSchemeHandler alloc] init] autorelease];
+    schemeHandler->requestHandler = requestHandler;
+
+    [_webviewConfiguration
+        setURLSchemeHandler: schemeHandler
+        forURLScheme: [NSString stringWithUTF8String: scheme]];
+}
+
+void Photino::AttachWebView()
+{
+    NSString *initScriptSource = @"window.__receiveMessageCallbacks = [];"
+			"window.__dispatchMessageCallback = function(message) {"
+			"	window.__receiveMessageCallbacks.forEach(function(callback) { callback(message); });"
+			"};"
+			"window.external = {"
+			"	sendMessage: function(message) {"
+			"		window.webkit.messageHandlers.photinointerop.postMessage(message);"
+			"	},"
+			"	receiveMessage: function(callback) {"
+			"		window.__receiveMessageCallbacks.push(callback);"
+			"	}"
+			"};";
+
+    WKUserScript *initScript = [
+        [WKUserScript alloc]
+        initWithSource: initScriptSource
+        injectionTime: WKUserScriptInjectionTimeAtDocumentStart
+        forMainFrameOnly: true];
+
+    WKUserContentController *userContentController = [WKUserContentController new];
+    [userContentController addUserScript:initScript];
+    _webviewConfiguration.userContentController = userContentController;
+
+    _webview = [
+        [WKWebView alloc]
+        initWithFrame: _window.contentView.frame
+        configuration: _webviewConfiguration];
+
+    [_webview setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
+    [_window.contentView addSubview: _webview];
+    [_window.contentView setAutoresizesSubviews: true];
+
+    UiDelegate *uiDelegate = [[[UiDelegate alloc] init] autorelease];
+    uiDelegate->photino = this;
+    uiDelegate->window = _window;
+    uiDelegate->webMessageReceivedCallback = _webMessageReceivedCallback;
+
+    NavigationDelegate *navDelegate = [[[NavigationDelegate alloc] init] autorelease];
+    navDelegate->photino = this;
+    navDelegate->window = _window;
+
+    [userContentController
+        addScriptMessageHandler: uiDelegate
+        name:@"photinointerop"];
+
+    _webview.UIDelegate = uiDelegate;
+    _webview.navigationDelegate = navDelegate;
+
+    if (_startUrl != NULL)
+        NavigateToUrl(_startUrl);
+    else if (_startString != NULL)
+        NavigateToString(_startString);
+    else
+    {    
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert setMessageText:@"Neither StartUrl nor StartString was specified"];
+        [alert runModal];
+    }
+}
+
+void Photino::Show(bool isAlreadyShown)
+{
+    if (_webview == nil)
+        AttachWebView();
+
+    [_window makeKeyAndOrderFront: _window];
+    [_window orderFrontRegardless];
+}
 #endif

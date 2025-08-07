@@ -1273,3 +1273,13 @@ void Photino::Show(bool isAlreadyShown)
 			exit(0);
 	}
 }
+
+void Photino::OpenDevTools() {
+    if (_webviewWindow) {
+        wil::com_ptr<ICoreWebView2Settings> settings;
+        HRESULT hr = _webviewWindow->get_Settings(&settings);
+        if (SUCCEEDED(hr)) {
+            settings->put_AreDevToolsEnabled(TRUE);
+        }
+    }
+}
