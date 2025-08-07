@@ -1,0 +1,70 @@
+name: Build Photino.Native
+
+on:
+  push:
+    branches:
+      - tmp
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create output directory
+        run: mkdir -p x64/Release
+
+      - name: Build Photino.Native.so
+        run: |
+          gcc -std=c++11 -shared -DOS_LINUX \
+            Photino.Native/Exports.cpp Photino.Native/Photino.Linux.cpp \
+            -o x64/Release/Photino.Native.so \
+            `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1 libnotify` -fPIC
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Photino.Native.so
+          path: x64/Release/Photino.Native.so
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create output directory
+        run: mkdir x64\Release
+
+      - name: Build Photino.Native.dll
+        run: |
+          cl /LD /EHsc /D OS_WINDOWS ^
+            Photino.Native\Exports.cpp Photino.Native\Photino.Windows.cpp ^
+            /Fe:x64\Release\Photino.Native.dll
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Photino.Native.dll
+          path: x64\Release\Photino.Native.dll
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create output directory
+        run: mkdir -p x64/Release
+
+      - name: Build Photino.Native.dylib
+        run: |
+          clang++ -std=c++11 -dynamiclib -DOS_MACOS \
+            Photino.Native/Exports.cpp Photino.Native/Photino.Mac.cpp \
+            -o x64/Release/Photino.Native.dylib \
+            -framework Cocoa -framework WebKit
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Photino.Native.dylib
+          path: x64/Release/Photino.Native.dylib
