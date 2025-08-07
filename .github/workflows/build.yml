@@ -38,11 +38,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install WIL and WebView2 via vcpkg
+      - name: Install WIL via vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install wil microsoft.webview2
+          .\vcpkg\vcpkg install wil
+
+      - name: Download WebView2 SDK headers
+        run: |
+          mkdir webview2
+          curl -L https://github.com/MicrosoftEdge/WebView2Samples/raw/main/WebView2Samples/Win32WebView2Sample/WebView2.h -o webview2/WebView2.h
 
       - name: Create output directory
         run: mkdir x64\Release
@@ -53,7 +58,7 @@ jobs:
           cl /LD /EHsc /std:c++17 /D OS_WINDOWS ^
             Photino.Native\Exports.cpp Photino.Native\Photino.Windows.cpp ^
             /I vcpkg\packages\wil_x64-windows\include ^
-            /I vcpkg\packages\microsoft.webview2_x64-windows\include ^
+            /I webview2 ^
             /Fe:x64\Release\Photino.Native.dll
         shell: cmd
 
