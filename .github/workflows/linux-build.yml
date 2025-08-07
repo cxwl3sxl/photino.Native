@@ -30,7 +30,7 @@ jobs:
     - name: Build Photino.Native.so
       run: |
         gcc -std=c++11 -shared -DOS_LINUX \
-          Exports.cpp Photino.Linux.cpp \
+          Photino.Native/Exports.cpp Photino.Native/Photino.Linux.cpp \
           -o x64/Release/Photino.Native.so \
           `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1 libnotify` -fPIC
 
