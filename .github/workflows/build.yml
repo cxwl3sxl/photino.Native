@@ -52,6 +52,7 @@ jobs:
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
           cl /LD /EHsc /D OS_WINDOWS ^
             Photino.Native\Exports.cpp Photino.Native\Photino.Windows.cpp ^
+            /I vcpkg\packages\wil_x64-windows\include ^
             /Fe:x64\Release\Photino.Native.dll
         shell: cmd
 
