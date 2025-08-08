@@ -762,6 +762,11 @@ void Photino::SetZoom(int zoom)
 	[_webview setMagnification: newZoom];
 }
 
+void Photino::OpenDevTools()
+{
+    //TODO OPEN MAC DEV TOOLS
+}
+
 void EnsureInvoke(dispatch_block_t block)
 {
     if ([NSThread isMainThread])
