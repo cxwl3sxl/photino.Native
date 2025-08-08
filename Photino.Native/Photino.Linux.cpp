@@ -1078,7 +1078,7 @@ void Photino::OpenDevTools() {
 		WebKitSettings* settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(_webview));
 		webkit_settings_set_enable_developer_extras(settings, TRUE);
 
-		WebKitWebInspector* inspector = webkit_web_view_get_inspector(_webview);
+		WebKitWebInspector* inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(_webview));
     	webkit_web_inspector_show(inspector);
 	}
 }
