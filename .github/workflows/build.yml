@@ -7,47 +7,47 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libnotify-dev
-
-      - name: Create output directory
-        run: mkdir -p x64/Release
-
-      - name: Build Photino.Native.so
-        run: |
-          gcc -std=c++11 -shared -DOS_LINUX \
-            -O3 -DNDEBUG \
-            Photino.Native/Exports.cpp Photino.Native/Photino.Linux.cpp Photino.Native/Photino.Linux.Dialog.cpp \
-            -o x64/Release/Photino.Native.so \
-            `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1 libnotify` -fPIC
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Photino.Native.so
-          path: x64/Release/Photino.Native.so
-
-  # build-macos:
-  #   runs-on: macos-latest
+  # build-linux:
+  #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: actions/checkout@v4
+
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libnotify-dev
 
   #     - name: Create output directory
   #       run: mkdir -p x64/Release
 
-  #     - name: Build Photino.Native.dylib
+  #     - name: Build Photino.Native.so
   #       run: |
-  #         gcc -shared -lstdc++ -DOS_MAC -framework Cocoa -framework WebKit Photino.Native/Photino.Mac.mm Photino.Native/Exports.cpp Photino.Native/Photino.Mac.AppDelegate.mm Photino.Native/Photino.Mac.UiDelegate.mm Photino.Native/Photino.Mac.UrlSchemeHandler.mm -o x64/$(buildConfiguration)/Photino.Native.dylib
+  #         gcc -std=c++11 -shared -DOS_LINUX \
+  #           -O3 -DNDEBUG \
+  #           Photino.Native/Exports.cpp Photino.Native/Photino.Linux.cpp Photino.Native/Photino.Linux.Dialog.cpp \
+  #           -o x64/Release/Photino.Native.so \
+  #           `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1 libnotify` -fPIC
 
   #     - name: Upload artifact
   #       uses: actions/upload-artifact@v4
   #       with:
-  #         name: Photino.Native.dylib
-  #         path: x64/Release/Photino.Native.dylib
+  #         name: Photino.Native.so
+  #         path: x64/Release/Photino.Native.so
+
+   build-macos:
+     runs-on: macos-latest
+     steps:
+       - uses: actions/checkout@v4
+
+       - name: Create output directory
+         run: mkdir -p x64/Release
+
+       - name: Build Photino.Native.dylib
+         run: |
+           gcc -shared -lstdc++ -DOS_MAC -framework Cocoa -framework WebKit Photino.Native/Photino.Mac.mm Photino.Native/Photino.Mac.WindowDelegate.mm Photino.Native/Photino.Mac.NavigationDelegate.mm Photino.Native/Photino.Mac.Dialog.mm Photino.Native/Photino.Mac.NSWindowBorderless.mm Photino.Native/Exports.cpp Photino.Native/Photino.Mac.AppDelegate.mm Photino.Native/Photino.Mac.UiDelegate.mm Photino.Native/Photino.Mac.UrlSchemeHandler.mm -o x64/$(buildConfiguration)/Photino.Native.dylib
+
+       - name: Upload artifact
+         uses: actions/upload-artifact@v4
+         with:
+           name: Photino.Native.dylib
+           path: x64/Release/Photino.Native.dylib
