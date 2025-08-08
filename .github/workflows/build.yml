@@ -44,7 +44,19 @@ jobs:
 
        - name: Build Photino.Native.dylib
          run: |
-           gcc -shared -lstdc++ -DOS_MAC -framework Cocoa -framework WebKit Photino.Native/Photino.Mac.mm Photino.Native/Photino.Mac.WindowDelegate.mm Photino.Native/Photino.Mac.NavigationDelegate.mm Photino.Native/Photino.Mac.Dialog.mm Photino.Native/Photino.Mac.NSWindowBorderless.mm Photino.Native/Exports.cpp Photino.Native/Photino.Mac.AppDelegate.mm Photino.Native/Photino.Mac.UiDelegate.mm Photino.Native/Photino.Mac.UrlSchemeHandler.mm -o x64/$(buildConfiguration)/Photino.Native.dylib
+          clang++ -std=c++17 -fPIC -dynamiclib -DOS_MAC \
+          -framework Cocoa -framework WebKit \
+          Photino.Native/Photino.Mac.mm \
+          Photino.Native/Photino.Mac.WindowDelegate.mm \
+          Photino.Native/Photino.Mac.NavigationDelegate.mm \
+          Photino.Native/Photino.Mac.Dialog.mm \
+          Photino.Native/Photino.Mac.NSWindowBorderless.mm \
+          Photino.Native/Exports.cpp \
+          Photino.Native/Photino.Mac.AppDelegate.mm \
+          Photino.Native/Photino.Mac.UiDelegate.mm \
+          Photino.Native/Photino.Mac.UrlSchemeHandler.mm \
+          -o x64/$(buildConfiguration)/Photino.Native.dylib
+
 
        - name: Upload artifact
          uses: actions/upload-artifact@v4
