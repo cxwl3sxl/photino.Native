@@ -46,6 +46,8 @@ jobs:
          run: cp Photino.Native/Exports.cpp Photino.Native/Exports.mm
 
        - name: Build Photino.Native.dylib
+         env:
+          buildConfiguration: Release
          run: |
           clang++ -std=c++17 -fPIC -dynamiclib -DOS_MAC \
           -framework Cocoa -framework WebKit \
