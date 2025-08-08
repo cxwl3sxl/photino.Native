@@ -23,7 +23,8 @@ jobs:
       - name: Build Photino.Native.so
         run: |
           gcc -std=c++11 -shared -DOS_LINUX \
-            Photino.Native/Exports.cpp Photino.Native/Photino.Linux.cpp \
+            -O3 -DNDEBUG \
+            Photino.Native/Exports.cpp Photino.Native/Photino.Linux.cpp Photino.Native/Photino.Linux.Dialog.cpp \
             -o x64/Release/Photino.Native.so \
             `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1 libnotify` -fPIC
 
@@ -33,27 +34,20 @@ jobs:
           name: Photino.Native.so
           path: x64/Release/Photino.Native.so
 
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
+  # build-macos:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Create output directory
-        run: mkdir -p x64/Release
+  #     - name: Create output directory
+  #       run: mkdir -p x64/Release
 
-      - name: Build Photino.Native.dylib
-        run: |
-          clang++ -std=c++11 -dynamiclib -DOS_MACOS \
-            Photino.Native/Exports.cpp \
-            Photino.Native/Photino.Mac.mm \
-            Photino.Native/Photino.Mac.AppDelegate.mm \
-            Photino.Native/Photino.Mac.UiDelegate.mm \
-            Photino.Native/Photino.Mac.UrlSchemeHandler.mm \
-            -o x64/Release/Photino.Native.dylib \
-            -framework Cocoa -framework WebKit
+  #     - name: Build Photino.Native.dylib
+  #       run: |
+  #         gcc -shared -lstdc++ -DOS_MAC -framework Cocoa -framework WebKit Photino.Native/Photino.Mac.mm Photino.Native/Exports.cpp Photino.Native/Photino.Mac.AppDelegate.mm Photino.Native/Photino.Mac.UiDelegate.mm Photino.Native/Photino.Mac.UrlSchemeHandler.mm -o x64/$(buildConfiguration)/Photino.Native.dylib
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Photino.Native.dylib
-          path: x64/Release/Photino.Native.dylib
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: Photino.Native.dylib
+  #         path: x64/Release/Photino.Native.dylib
