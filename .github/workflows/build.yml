@@ -46,8 +46,6 @@ jobs:
          run: cp Photino.Native/Exports.cpp Photino.Native/Exports.mm
 
        - name: Build Photino.Native.dylib
-         env:
-          buildConfiguration: Release
          run: |
           clang++ -std=c++17 -fPIC -dynamiclib -DOS_MAC \
           -framework Cocoa -framework WebKit \
@@ -61,7 +59,7 @@ jobs:
           Photino.Native/Photino.Mac.AppDelegate.mm \
           Photino.Native/Photino.Mac.UiDelegate.mm \
           Photino.Native/Photino.Mac.UrlSchemeHandler.mm \
-          -o x64/$(buildConfiguration)/Photino.Native.dylib
+          -o x64/Release/Photino.Native.dylib
 
 
        - name: Upload artifact
