@@ -42,6 +42,9 @@ jobs:
        - name: Create output directory
          run: mkdir -p x64/Release
 
+       - name: copy Exports.cpp
+         run: cp Photino.Native/Exports.cpp Photino.Native/Exports.mm
+
        - name: Build Photino.Native.dylib
          run: |
           clang++ -std=c++17 -fPIC -dynamiclib -DOS_MAC \
@@ -51,7 +54,7 @@ jobs:
           Photino.Native/Photino.Mac.NavigationDelegate.mm \
           Photino.Native/Photino.Mac.Dialog.mm \
           Photino.Native/Photino.Mac.NSWindowBorderless.mm \
-          Photino.Native/Exports.cpp \
+          Photino.Native/Exports.mm \
           Photino.Native/Photino.Mac.AppDelegate.mm \
           Photino.Native/Photino.Mac.UiDelegate.mm \
           Photino.Native/Photino.Mac.UrlSchemeHandler.mm \
