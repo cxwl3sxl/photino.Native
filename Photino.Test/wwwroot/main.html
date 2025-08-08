@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -32,6 +32,10 @@
 
         function Close() {
             window.external.sendMessage('close');
+        }
+
+        function OpenDevTools(){
+            window.external.sendMessage('openDevTools');
         }
 
         function ClearBrowserAutoFill() {
@@ -277,7 +281,8 @@
     <button onclick="SetTopmost()">Topmost</button>
     <button onclick="SetTransparent()">Transparent</button>
     <button onclick="SetFullScreen()">Kiosk</button>
-    <button onclick="Close()">Close</button>
+<button onclick="Close()">Close</button>
+<button onclick="OpenDevTools()">OpenDevTools</button>
     <br>
     <b>Size</b><br>
     <button onclick="Minimize()">Minimize</button>

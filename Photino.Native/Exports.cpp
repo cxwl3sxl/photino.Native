@@ -276,6 +276,10 @@ extern "C"
 		instance->WaitForExit();
 	}
 
+	EXPORTED void Photino_OpenDevTools(Photino* instance) 
+	{
+		instance->OpenDevTools();
+	}
 
 
 	//Dialog

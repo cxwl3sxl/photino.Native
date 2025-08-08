@@ -1073,4 +1073,12 @@ void Photino::AddCustomSchemeHandlers()
 	}
 }
 
+void Photino::OpenDevTools() {
+	if (_webview) {
+		WebKitSettings* settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(_webview));
+		webkit_settings_set_enable_developer_extras(settings, TRUE);
+	}
+}
+
 #endif
+

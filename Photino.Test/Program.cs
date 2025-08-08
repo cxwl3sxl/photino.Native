@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -475,6 +475,10 @@ namespace Photino.NET
             else if (string.Compare(message, "showMessage", true) == 0)
             {
                 var result = currentWindow.ShowMessage("Title", "Testing... 🤖");
+            }
+            else if (string.Compare(message, "openDevTools", true) == 0)
+            {
+                currentWindow.OpenDevTools();
             }
             else
                 throw new Exception($"Unknown message '{message}'");
